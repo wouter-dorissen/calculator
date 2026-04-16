@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Influencer Prijscalculator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            max-width: 560px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #E1306C, #C13584, #833AB4);
+            padding: 28px 32px;
+            color: white;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        .form {
+            padding: 28px 32px;
+        }
+
+        .field {
+            margin-bottom: 22px;
+        }
+
+        .field label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .field .hint {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 6px;
+        }
+
+        .field input, .field select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .field input:focus, .field select:focus {
+            border-color: #833AB4;
+        }
+
+        .row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .row .field { flex: 1; }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #E1306C, #833AB4);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-top: 4px;
+        }
+
+        button:hover { opacity: 0.9; }
+        button:active { transform: scale(0.98); }
+
+        .result {
+            display: none;
+            margin-top: 24px;
+            background: #f8f4ff;
+            border-radius: 14px;
+            padding: 24px;
+            text-align: center;
+            border: 2px solid #e8dff5;
+        }
+
+        .result.show { display: block; animation: fadeIn 0.4s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .price-label {
+            font-size: 13px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .price-range {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #E1306C, #833AB4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 8px 0;
+        }
+
+        .breakdown {
+            margin-top: 16px;
+            text-align: left;
+        }
+
+        .breakdown-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 13px;
+            color: #555;
+            border-bottom: 1px solid #ece4f6;
+        }
+
+        .breakdown-row:last-child { border-bottom: none; }
+
+        .breakdown-row span:last-child {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .tier-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .tier-nano { background: #e3f2fd; color: #1565c0; }
+        .tier-micro { background: #e8f5e9; color: #2e7d32; }
+        .tier-mid { background: #fff3e0; color: #e65100; }
+        .tier-macro { background: #fce4ec; color: #c62828; }
+        .tier-mega { background: #f3e5f5; color: #6a1b9a; }
+
+        .info-box {
+            margin-top: 16px;
+            background: #fff;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 12px;
+            color: #777;
+            line-height: 1.5;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 0 32px 20px;
+            font-size: 11px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Instagram Influencer Prijscalculator</h1>
+        <p>Bereken de gemiddeld te verwachten prijs per post</p>
+    </div>
+
+    <div class="form">
+        <div class="field">
+            <label>Aantal volgers</label>
+            <input type="number" id="followers" placeholder="bijv. 25000" min="100">
+        </div>
+
+        <div class="row">
+            <div class="field">
+                <label>Engagement rate (%)</label>
+                <div class="hint">Gemiddeld: 1% – 5%</div>
+                <input type="number" id="engagement" placeholder="bijv. 3.2" step="0.1" min="0" max="100">
+            </div>
+            <div class="field">
+                <label>Type content</label>
+                <select id="contentType">
+                    <option value="post">Feed Post</option>
+                    <option value="story">Story</option>
+                    <option value="reel">Reel</option>
+                    <option value="carousel">Carousel</option>
+                    <option value="package">Pakket (post + stories)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Niche (optioneel)</label>
+            <select id="niche">
+                <option value="general">Algemeen / Lifestyle</option>
+                <option value="fashion">Fashion & Beauty</option>
+                <option value="food">Food & Drinks</option>
+                <option value="travel">Travel</option>
+                <option value="fitness">Fitness & Health</option>
+                <option value="tech">Tech & Gaming</option>
+                <option value="business">Business & Finance</option>
+                <option value="parenting">Parenting & Family</option>
+            </select>
+        </div>
+
+        <button onclick="calculate()">Bereken prijs</button>
+
+        <div class="result" id="result">
+            <div class="price-label">Geschatte prijs</div>
+            <div class="price-range" id="priceRange"></div>
+            <span class="tier-badge" id="tierBadge"></span>
+
+            <div class="breakdown" id="breakdown"></div>
+
+            <div class="info-box" id="infoBox"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Prijzen zijn indicatief en gebaseerd op gemiddelde Europese marktdata (2024–2026).
+    </div>
+</div>
+
+<script>
+function calculate() {
+    const followers = parseInt(document.getElementById('followers').value);
+    const engagement = parseFloat(document.getElementById('engagement').value);
+    const contentType = document.getElementById('contentType').value;
+    const niche = document.getElementById('niche').value;
+
+    if (!followers || followers < 100) {
+        alert('Vul een geldig aantal volgers in (minimaal 100).');
+        return;
+    }
+    if (!engagement || engagement <= 0 || engagement > 100) {
+        alert('Vul een geldige engagement rate in (bijv. 3.2).');
+        return;
+    }
+
+    // --- Tier bepalen ---
+    let tier, tierClass, baseCPM;
+    if (followers < 1000) {
+        tier = 'Nano'; tierClass = 'tier-nano'; baseCPM = 15;
+    } else if (followers < 10000) {
+        tier = 'Nano'; tierClass = 'tier-nano'; baseCPM = 18;
+    } else if (followers < 50000) {
+        tier = 'Micro'; tierClass = 'tier-micro'; baseCPM = 14;
+    } else if (followers < 100000) {
+        tier = 'Mid-tier'; tierClass = 'tier-mid'; baseCPM = 12;
+    } else if (followers < 500000) {
+        tier = 'Macro'; tierClass = 'tier-macro'; baseCPM = 10;
+    } else {
+        tier = 'Mega'; tierClass = 'tier-mega'; baseCPM = 8;
+    }
+
+    // --- Engagement multiplier ---
+    // Hogere engagement = meer waarde
+    let engMultiplier;
+    if (engagement < 1) engMultiplier = 0.6;
+    else if (engagement < 2) engMultiplier = 0.85;
+    else if (engagement < 3) engMultiplier = 1.0;
+    else if (engagement < 5) engMultiplier = 1.2;
+    else if (engagement < 8) engMultiplier = 1.5;
+    else engMultiplier = 1.8;
+
+    // --- Content type multiplier ---
+    const contentMultipliers = {
+        story: 0.35,
+        post: 1.0,
+        carousel: 1.2,
+        reel: 1.5,
+        package: 1.8
+    };
+    const contentMult = contentMultipliers[contentType];
+
+    // --- Niche multiplier ---
+    const nicheMultipliers = {
+        general: 1.0,
+        fashion: 1.15,
+        food: 0.95,
+        travel: 1.1,
+        fitness: 1.05,
+        tech: 1.2,
+        business: 1.35,
+        parenting: 0.9
+    };
+    const nicheMult = nicheMultipliers[niche];
+
+    // --- Berekening ---
+    // Basisprijs = (volgers / 1000) * CPM * engagement * content * niche
+    const basePrice = (followers / 1000) * baseCPM * engMultiplier * contentMult * nicheMult;
+
+    // Minimumbedragen per tier
+    const minimums = {
+        'Nano': 25,
+        'Micro': 75,
+        'Mid-tier': 200,
+        'Macro': 800,
+        'Mega': 3000
+    };
+    const minFloor = minimums[tier] * contentMult;
+
+    const avgPrice = Math.max(basePrice, minFloor);
+
+    // Bereik: -20% tot +25%
+    const low = Math.round(avgPrice * 0.80);
+    const high = Math.round(avgPrice * 1.25);
+    const avg = Math.round(avgPrice);
+
+    // --- Resultaat tonen ---
+    const resultEl = document.getElementById('result');
+    resultEl.classList.add('show');
+
+    document.getElementById('priceRange').textContent = `€${low} – €${high}`;
+
+    const badge = document.getElementById('tierBadge');
+    badge.textContent = `${tier} influencer`;
+    badge.className = `tier-badge ${tierClass}`;
+
+    const contentLabels = {
+        story: 'Story', post: 'Feed Post', carousel: 'Carousel',
+        reel: 'Reel', package: 'Pakket (post + stories)'
+    };
+    const nicheLabels = {
+        general: 'Algemeen', fashion: 'Fashion & Beauty', food: 'Food & Drinks',
+        travel: 'Travel', fitness: 'Fitness & Health', tech: 'Tech & Gaming',
+        business: 'Business & Finance', parenting: 'Parenting & Family'
+    };
+
+    document.getElementById('breakdown').innerHTML = `
+        <div class="breakdown-row"><span>Gemiddelde prijs</span><span>€${avg}</span></div>
+        <div class="breakdown-row"><span>Volgers</span><span>${followers.toLocaleString('nl-NL')}</span></div>
+        <div class="breakdown-row"><span>Engagement rate</span><span>${engagement}%</span></div>
+        <div class="breakdown-row"><span>Type content</span><span>${contentLabels[contentType]}</span></div>
+        <div class="breakdown-row"><span>Niche</span><span>${nicheLabels[niche]}</span></div>
+        <div class="breakdown-row"><span>Basis CPM</span><span>€${baseCPM}</span></div>
+        <div class="breakdown-row"><span>Engagement factor</span><span>${engMultiplier}x</span></div>
+        <div class="breakdown-row"><span>Content factor</span><span>${contentMult}x</span></div>
+        <div class="breakdown-row"><span>Niche factor</span><span>${nicheMult}x</span></div>
+    `;
+
+    document.getElementById('infoBox').innerHTML = `
+        <strong>Hoe wordt dit berekend?</strong><br>
+        De prijs is gebaseerd op een CPM-model (kosten per 1.000 volgers), gecorrigeerd voor engagement rate, type content en niche.
+        ${tier === 'Nano' ? ' Nano-influencers hebben vaak hogere CPMs door hun hechte community.' : ''}
+        ${tier === 'Mega' ? ' Mega-influencers hebben lagere CPMs maar hogere absolute bedragen door hun bereik.' : ''}
+        Het bereik van €${low} – €${high} geeft de bandbreedte aan waarbinnen de meeste deals vallen.
+    `;
+
+    resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+
+</body>
+</html>
